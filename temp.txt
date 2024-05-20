@@ -1,0 +1,503 @@
+package com.foodieFav;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;  //Import FileWriter class
+import java.sql.SQLOutput;
+import java.util.*; // Import all utilities
+import java.lang.*; // Import Java Language Package
+import java.io.File;  // Import the File class
+import java.io.IOException;  // Import the IOException class to handle errors
+
+import static com.foodieFav.FoodQueue.*;
+import static com.foodieFav.FoodQueue.min;
+
+
+public class Main {
+    static int stock = 50; //initialize stock variable
+    //initialize arrays for each cashier queue
+    static Customer[][] cashiers = {cashier1, cashier2, cashier3};
+    static boolean element1 = true;
+    static double price = 650.00;
+    static double queue1_Income=0.00;
+    static double queue2_Income=0.00;
+    static double queue3_Income=0.00;
+
+    //Creating Methods for each option
+    public static void viewAllQueues() {
+        System.out.print("""
+                ********************
+                *     Cashiers     *
+                ********************
+                """);
+        for (int i = 0; i < cashier1.length || i < cashier2.length || i < cashier3.length; i++) {   //using for loop to print queues vertically
+            if (i < cashier1.length) {
+                if (cashier1[i] == null) {  //printing X if element is null
+                    System.out.print(" ");
+                    System.out.print("   X");
+                } else {
+                    System.out.print("    O");
+                }
+            } else {
+                System.out.print("     ");
+            }
+            if (i < cashier2.length) {
+                if (cashier2[i] == null) {
+                    System.out.print("    X");
+                } else {
+                    System.out.print("    O");
+                }
+            } else {
+                System.out.print("     ");
+            }
+            if (i < cashier3.length) {
+                if (cashier3[i] == null) {
+                    System.out.print("    X");
+                } else {
+                    System.out.print("    O");
+                }
+            }
+            System.out.println("  ");
+        }
+        System.out.println("X – Occupied O – Not Occupied");
+    }
+
+
+    public static void allEmptyQueues() {        //https://stackoverflow.com/questions/21592835/how-to-check-a-list-whether-it-contains-all-the-elements-as-null-string
+        if (cashier1[0] == null && cashier1[1] == null) {     //Checking if each element is null to find empty queues
+            System.out.println("Queue 1 is empty");
+        }
+        if (cashier2[0] == null && cashier2[1] == null && cashier2[2] == null) {
+            System.out.println("Queue 2 is empty");
+        }
+        if (cashier3[0] == null && cashier3[1] == null && cashier3[2] == null && cashier3[3] == null && cashier3[4] == null) {
+            System.out.println("Queue 3 is empty");
+        }
+    }
+
+    public static void addCustomer() {      //https://stackoverflow.com/questions/2622725/how-to-take-user-input-in-array-using-java
+        if (stock > 0) {
+            try {
+                Scanner input = new Scanner(System.in);
+                System.out.print("Enter first name of customer : ");
+                String fName = input.next();     //creating temporary variable to store customer name before adding it to the array
+                System.out.print("Enter second name of customer : ");
+                String sName = input.next();
+                System.out.print("Enter No. of burgers required : ");
+                int bCount = input.nextInt();
+
+                Customer customerDetails = new Customer(fName,sName,bCount);
+                switch(min){
+                    case 1:
+                        for (int i = 0; i < cashier1.length; i++) {
+                            if (cashier1[i] == null) {
+                                cashier1[i] = customerDetails;
+                                break;
+                            }
+                        }
+                    case 2:
+                        for (int i = 0; i < cashier2.length; i++) {
+                            if (cashier2[i] == null) {
+                                cashier2[i] = customerDetails;
+                                break;
+                            }
+                        }
+                    case 3:
+                        for (int i = 0; i < cashier3.length; i++) {
+                            if (cashier3[i] == null) {
+                                cashier3[i] = customerDetails;
+                                break;
+                            }
+                        }
+                }
+
+            } catch (
+                    InputMismatchException e) {    //checking if the input is valid, if not, calls the same method again
+                System.out.println("Invalid data\n");
+                addCustomer();
+            }
+            if (stock <= 10) {
+                System.out.println("Warning: Burger stock is at " + stock);    //Shows warning when burger stock hits 10
+            }
+        } else {
+            System.out.println("Burger stock insufficient, please add more stock");
+        }
+    }
+
+    public static void removeServedCustomer() {      //https://stackoverflow.com/questions/7970857/java-shifting-elements-in-an-array
+        try {
+            System.out.print("Enter which queue includes the served customer (1,2 or 3) : ");
+            Scanner input = new Scanner(System.in);
+            int queue = input.nextInt();
+            if (queue == 1) {
+                for (int i = 0; i < cashier1.length; i++) {
+                    if (i == cashier1.length - 1) {
+                        cashier1[i] = null;             //making last element null
+                        break;
+                    }
+                    cashier1[i] = cashier1[i + 1];      //shifting each element forward by one index
+                }
+            }
+            if (queue == 2) {
+                for (int i = 0; i < cashier2.length; i++) {
+                    if (i == cashier2.length - 1) {
+                        cashier2[i] = null;
+                        break;
+                    }
+                    cashier2[i] = cashier2[i + 1];
+
+                }
+            }
+            if (queue == 3) {
+                for (int i = 0; i < cashier3.length; i++) {
+                    if (i == cashier3.length - 1) {
+                        cashier3[i] = null;
+                        break;
+                    }
+                    cashier3[i] = cashier3[i + 1];
+                }
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid data\n");
+            removeServedCustomer();
+        }
+    }
+
+    public static void removeCustomer() {
+        try {
+            System.out.print("Enter which queue includes the customer to be removed (1,2 or 3) : ");
+            Scanner input = new Scanner(System.in);
+            int queue = input.nextInt();
+            System.out.print("Enter position number : ");
+            int positon = input.nextInt();  //declare position variable to get customer's row
+
+            switch (queue) {
+                case 1:
+                    if (cashier1[positon - 1] != null) {    //checking whether the row before the element is empty or not
+                        if (cashier1[positon] == null) {
+                            cashier1[positon - 1] = null;
+                        } else {
+                            cashier1[positon] = null;   //loops weren't used because there are only 2 elements in this array
+                        }
+                        stock += 5;
+                    } else {
+                        System.out.println("That row is already empty");
+                    }
+                    break;
+                case 2:
+                    if (cashier2[positon - 1] != null) {
+                        for (int i = positon - 1; i <= cashier2.length; i++) {
+                            if (positon == cashier2.length) {
+                                cashier2[positon - 1] = null;   //checking if the customer is the last customer, if so remove directly
+
+                            } else {
+                                cashier2[i] = cashier2[positon];
+                                positon++;  //shifting customers forward
+                            }
+                        }
+                        stock += 5;   //adding the previously reserved stock
+                    } else {
+                        System.out.println("That row is already empty");
+                    }
+                    break;
+                case 3:
+                    if (cashier3[positon - 1] != null) {
+                        for (int i = positon - 1; i <= cashier3.length; i++) {
+                            if (positon == cashier3.length) {
+                                cashier3[positon - 1] = null;
+                            } else {
+                                cashier3[i] = cashier3[positon];
+                                positon++;
+                            }
+                        }
+                        stock += 5;
+                    } else {
+                        System.out.println("That row is already empty");
+                        break;
+                    }
+
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("invalid data");
+            removeCustomer();
+        }
+    }
+
+    public static void sortedNames() {  //https://www.youtube.com/watch?v=j1ATGus8a2I
+        Scanner input = new Scanner(System.in);
+        System.out.print("Enter queue to be sorted :");
+        int cashier_num = input.nextInt();  //cashier queue number to be sorted
+        switch (cashier_num) {
+            case 1:
+                if (cashier1 != null && cashier1.length > 0) {  //Checking if queue has customers
+                    for (int i = 0; i < cashier1.length - 1; i++) {
+                        for (int j = 0; j < (cashier1.length - 1) - i; j++) {  //Comparing each name through inner loops
+                            if (cashier1[j] != null && cashier1[j + 1] != null && cashier1[j].getF_name().compareTo(cashier1[j + 1].getF_name()) > 0) {
+                                Customer k = cashier1[j];     //Switching the names according to alphabetical order
+                                cashier1[j] = cashier1[j + 1];
+                                cashier1[j + 1] = k;
+                            }
+                        }
+                    }
+                    System.out.print("Cashier 1 : ");
+                    for (Customer element : cashier1) {  //Printing sorted queue array
+                        if (element != null) {
+                            if (!element1) {
+                                System.out.print(", ");
+                            }
+                            System.out.print(element);
+                            element1 = false;
+                        }
+                    }
+                    System.out.println();
+                }
+            case 2:
+                if (cashier2 != null && cashier2.length > 0) {
+                    for (int i = 0; i < cashier2.length - 1; i++) {
+                        for (int j = 0; j < (cashier2.length - 1) - i; j++) {
+                            if (cashier2[j] != null && cashier2[j + 1] != null && cashier2[j].getF_name().compareTo(cashier2[j + 1].getF_name()) > 0) {
+                                Customer k = cashier2[j];
+                                cashier2[j] = cashier2[j + 1];
+                                cashier2[j + 1] = k;
+                            }
+                        }
+                    }
+                    System.out.print("Cashier 2 : ");
+                    for (Customer element : cashier1) {
+                        if (element != null) {
+                            if (!element1) {
+                                System.out.print(", ");
+                            }
+                            System.out.print(element);
+                            element1 = false;
+                        }
+                    }
+                    System.out.println();
+                }
+            case 3:
+                if (cashier3 != null && cashier3.length > 0) {
+                    for (int i = 0; i < cashier3.length - 1; i++) {
+                        for (int j = 0; j < (cashier3.length - 1) - i; j++) {
+                            if (cashier3[j] != null && cashier3[j + 1] != null && cashier3[j].getF_name().compareTo(cashier3[j + 1].getF_name()) > 0) {
+                                Customer k = cashier3[j];
+                                cashier3[j] = cashier3[j + 1];
+                                cashier3[j + 1] = k;
+                            }
+                        }
+                    }
+                    System.out.print("Queue 3 : ");
+                    for (Customer element : cashier3) {
+                        if (element != null) {
+                            if (!element1) {
+                                System.out.print(", ");
+                            }
+                            System.out.print(element);
+                            element1 = false;
+                        }
+                    }
+                    System.out.println();
+                }
+        }
+    }
+
+    public static void storeData() {     //https://www.w3schools.com/java/java_files_create.asp
+        try {
+            FileWriter myObj = new FileWriter("Foodies Fave Food Center.txt");  //creating file
+            for (Customer[] cashier : cashiers) {   //array initialization
+                for (int i = 0; i < cashier.length; i++) {
+                    if (cashier[i] != null) {
+                        myObj.write(cashier[i] + ", "); //writing outputs if array is not empty
+                    }
+                }
+                myObj.write("\n----------------\n");
+            }
+            myObj.write(stock + " Burgers in stock"); //Writing burger stock to file
+            myObj.close();
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+        }
+    }
+
+    public static void loadDataFromTxtFile() {       //https://www.w3schools.com/java/java_files_read.asp
+        try {
+            File myFile = new File("Foodies Fave Food Center.txt");
+            Scanner myReader = new Scanner(myFile); //using scanner class to read data from file
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();  //reading each line
+                System.out.println(data);
+            }
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println(">>>> An error occurred.");
+        }
+    }
+
+    public static void viewStock() {
+        System.out.println(stock + " Burgers remain in stock"); //printing remaining stock
+    }
+
+    public static void addStock() {
+        System.out.print("Add number of burgers to be added to stock :");
+        Scanner input = new Scanner(System.in);
+        int n_stock = input.nextInt();   //adding stock
+        stock += n_stock;
+        if (stock > 50) {
+            stock -= n_stock;     //checking if stock exceeds 50, if so gives error message and return stock
+            System.out.println("Burger stock cannot exceed 50, stock remain at :" + stock);
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        boolean shouldContinue = true;
+        while (shouldContinue) {
+            System.out.println("\n--- Foodies Fave Food Center ---");
+            System.out.println("100 or VFQ : View all Queues.");
+            System.out.println("101 or VEQ : View all empty Queues.");
+            System.out.println("102 or ACQ : Add customer to a Queue.");
+            System.out.println("103 or RCQ : Remove a customer from a Queue.");
+            System.out.println("104 or PCQ : Remove a served customer.");
+            System.out.println("105 or VCS : View Customers Sorted in alphabetical order.");
+            System.out.println("106 or SPD : Store Program Data into file.");
+            System.out.println("107 or LPD : Load Program Data from file.");
+            System.out.println("108 or STK : View Remaining burgers Stock");
+            System.out.println("109 or AFS : Add burgers to Stock");
+            System.out.println("999 or EXT : Exit the Program");
+            System.out.print("Enter option: ");
+
+            String option = input.next();
+            if (option.equals("999") || (option.equals("EXT"))) {  //https://stackoverflow.com/questions/10208052/string-equals-with-multiple-conditions-and-one-action-on-result
+                System.out.println("Exiting..");
+                shouldContinue = false;
+            } else {
+                switch (option) {   //https://stackoverflow.com/questions/16706716/using-two-values-for-one-switch-case-statement
+                    case "100":
+                    case "VFQ":
+                        viewAllQueues();
+                        break;
+                    case "101":
+                    case "VEQ":
+                        allEmptyQueues();
+                        break;
+                    case "102":
+                    case "ACQ":
+                        addCustomer();
+                        break;
+                    case "103":
+                    case "RCQ":
+                        removeCustomer();
+                        break;
+                    case "104":
+                    case "PCQ":
+                        removeServedCustomer();
+                        break;
+                    case "105":
+                    case "VCS":
+                        sortedNames();
+                        break;
+                    case "106":
+                    case "SPD":
+                        storeData();
+                        break;
+                    case "107":
+                    case "LPD":
+                        loadDataFromTxtFile();
+                        break;
+                    case "108":
+                    case "STK":
+                        viewStock();
+                        break;
+                    case "109":
+                    case "AFS":
+                        addStock();
+                        break;
+                    default:
+                        System.out.println("Invalid data");
+                        break;
+                }
+            }
+        }
+    }
+}
+
+//customer
+
+package com.foodieFav;
+        import java.util.*;
+public class Customer {
+    private String f_name;   // First name
+    private String s_name;   // Second name
+    private int b_count;  // Burgers required
+
+    public Customer(String f_name, String s_name, int b_count) {
+        super();
+        this.f_name = f_name;
+        this.s_name = s_name;
+        this.b_count = b_count;
+    }
+
+    public String getF_name(){
+        return  f_name;
+    }
+
+    public String getS_name(){
+        return  s_name;
+    }
+
+    public int getB_count(){
+        return  b_count;
+    }
+
+    @Override
+    public String toString(){
+        return "Customer:" +
+                "First name='" + f_name + '\'' +
+                ", Second name='" + s_name + '\'' +
+                ", No. of burgers required='" + b_count;
+    }
+}
+
+//Queue
+package com.foodieFav;
+        import java.util.*;
+public class FoodQueue {
+    //initialize arrays for each cashier queue
+    public static Customer[] cashier1;
+    public static Customer[] cashier2;
+    public static Customer[] cashier3;
+    public static int c1=0;                 //Cashier 1 count
+    public static int c2=0;                 //Cashier 2 count
+    public static int c3=0;                 //Cashier 3 count
+    public static int min;
+
+    public FoodQueue(){
+        cashier1 = new Customer[2];
+        cashier2 = new Customer[3];
+        cashier3 = new Customer[5];
+        Customer[][] cashiers = {cashier1, cashier2, cashier3};
+    }
+
+    public static int getMinQueue(){
+        for(int i = 0; i<=cashier1.length-1; i++){
+            if (cashier1[i]!=null){
+                c1+=1;
+            }
+        }
+        for(int i = 0; i<=cashier2.length-1; i++){
+            if (cashier2[i]!=null){
+                c2+=1;
+            }
+        }
+        for(int i = 0; i<=cashier3.length-1; i++){
+            if (cashier3[i]!=null){
+                c3+=1;
+            }
+        }
+        if(c1<c2 || c1==c2 || c1==c3){
+            min = 1;
+        }else if (c2<c1 || c2<c3 || c2==c3) {
+            min = 2;
+        }else{
+            min = 3;
+        }
+        return min;
+    }
+}
